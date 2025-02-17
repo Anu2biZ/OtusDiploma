@@ -1,4 +1,3 @@
-# pages/scanner.vue
 <template>
   <notifications position="top center" :duration="3000" />
   <div class="min-h-screen bg-gray-900 text-gray-100">
@@ -206,19 +205,22 @@
               <td class="px-6 py-4 whitespace-nowrap text-gray-200">
                 {{ opportunity.coin }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200"
+                  :class="{ 'value-changed': opportunity.priceChanged }">
                 ${{ opportunity.buyPrice.toFixed(2) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-200">
                 {{ opportunity.buyExchange }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200"
+                  :class="{ 'value-changed': opportunity.priceChanged }">
                 ${{ opportunity.sellPrice.toFixed(2) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-200">
                 {{ opportunity.sellExchange }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-green-400">
+              <td class="px-6 py-4 whitespace-nowrap text-green-400"
+                  :class="{ 'value-changed': opportunity.spreadChanged }">
                 {{ opportunity.spread.toFixed(2) }}%
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-200">
@@ -228,7 +230,10 @@
                 ${{ opportunity.fee.toFixed(2) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap"
-                  :class="opportunity.profit > 0 ? 'text-green-400' : 'text-red-400'"
+                  :class="[
+                    opportunity.profit > 0 ? 'text-green-400' : 'text-red-400',
+                    { 'value-changed': opportunity.profitChanged }
+                  ]"
               >
                 ${{ opportunity.profit.toFixed(2) }}
               </td>
@@ -315,9 +320,6 @@ const coins = computed(() => scannerStore.coins.map(coin => ({
 })))
 
 const paginatedOpportunities = computed(() => {
-  console.log('Total opportunities:', scannerStore.opportunities.length)
-  console.log('Filtered opportunities:', scannerStore.filteredOpportunities.length)
-  console.log('Current filters:', filters.value)
   return scannerStore.paginatedOpportunities
 })
 
@@ -381,7 +383,7 @@ const executeTrade = async (opportunity) => {
       status: 'Завершено'
     }
 
-    console.log('Executing trade:', trade); // Отладочный лог
+    console.log('Executing trade:', trade);
 
     // Добавляем сделку в дашборд
     dashboardStore.addTrade(trade)
@@ -409,7 +411,7 @@ const executeTrade = async (opportunity) => {
     });
   }
 }
-// Жизненный цикл
+
 onMounted(async () => {
   console.log('Component mounted')
   console.log('Initial filters:', filters.value)
@@ -435,6 +437,23 @@ watch(filters, (newFilters) => {
 </script>
 
 <style>
+/* Animation for value changes */
+@keyframes flash {
+  0% {
+    background-color: rgba(37, 99, 235, 0); /* blue-600 with 0 opacity */
+  }
+  50% {
+    background-color: rgba(37, 99, 235, 0.3); /* blue-600 with 0.3 opacity */
+  }
+  100% {
+    background-color: rgba(37, 99, 235, 0); /* blue-600 with 0 opacity */
+  }
+}
+
+.value-changed {
+  animation: flash 1s ease;
+}
+
 /* Dark theme for Multiselect */
 .multiselect-dark {
   --ms-bg: #374151 !important;

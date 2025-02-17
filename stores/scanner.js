@@ -31,7 +31,7 @@ export const useScannerStore = defineStore('scanner', {
 
     getters: {
         filteredOpportunities: (state) => {
-            console.log('Running filter with state:', state.filters);
+            // console.log('Running filter with state:', state.filters);
             return state.opportunities.filter(opp => {
                 // Преобразуем строковые значения в числа с дефолтными значениями
                 const volume = parseFloat(opp.volume) || 0;
@@ -53,20 +53,20 @@ export const useScannerStore = defineStore('scanner', {
                 const matchesFee = opp.fee <= maxFee;
 
                 // Отладочная информация для первой возможности
-                if (state.opportunities.indexOf(opp) === 0) {
-                    console.log('First opportunity:', {
-                        ...opp,
-                        matches: {
-                            matchesSellExchange,
-                            matchesBuyExchange,
-                            matchesCoins,
-                            matchesVolume,
-                            matchesProfit,
-                            matchesSpread,
-                            matchesFee
-                        }
-                    });
-                }
+                // if (state.opportunities.indexOf(opp) === 0) {
+                //     console.log('First opportunity:', {
+                //         ...opp,
+                //         matches: {
+                //             matchesSellExchange,
+                //             matchesBuyExchange,
+                //             matchesCoins,
+                //             matchesVolume,
+                //             matchesProfit,
+                //             matchesSpread,
+                //             matchesFee
+                //         }
+                //     });
+                // }
 
                 return matchesSellExchange && matchesBuyExchange && matchesCoins &&
                     matchesVolume && matchesProfit && matchesSpread && matchesFee;
@@ -94,9 +94,9 @@ export const useScannerStore = defineStore('scanner', {
                 if (opp) opportunities.push(opp);
                 if (opportunities.length >= 300) break;
             }
-            console.log('Generated opportunities:', opportunities.length);
-            console.log('Sample opportunity:', opportunities[0]);
-            console.log('Current store filters:', this.filters);
+            // console.log('Generated opportunities:', opportunities.length);
+            // console.log('Sample opportunity:', opportunities[0]);
+            // console.log('Current store filters:', this.filters);
             this.opportunities = opportunities;
             this.loading = false;
         },
@@ -205,21 +205,33 @@ export const useScannerStore = defineStore('scanner', {
                             const newProfit = newSellPrice - newBuyPrice - newFee;
                             const newProfitPercent = (newProfit / newBuyPrice) * 100;
 
-                            return {
+                            const updatedOpp = {
                                 ...opp,
                                 buyPrice: parseFloat(newBuyPrice.toFixed(2)),
                                 sellPrice: parseFloat(newSellPrice.toFixed(2)),
                                 spread: parseFloat(newSpread.toFixed(2)),
                                 fee: parseFloat(newFee.toFixed(2)),
                                 profit: parseFloat(newProfit.toFixed(2)),
-                                profitPercent: parseFloat(newProfitPercent.toFixed(2))
+                                profitPercent: parseFloat(newProfitPercent.toFixed(2)),
+                                // Добавляем флаги для отслеживания изменений
+                                priceChanged: true,
+                                spreadChanged: Math.abs(newSpread - opp.spread) > 0.01,
+                                profitChanged: Math.abs(newProfit - opp.profit) > 0.01
                             };
+                            
+                            // Сбрасываем флаги через секунду
+                            setTimeout(() => {
+                                updatedOpp.priceChanged = false;
+                                updatedOpp.spreadChanged = false;
+                                updatedOpp.profitChanged = false;
+                            }, 1000);
+                            
+                            return updatedOpp;
                         }
                         return opp;
                     });
 
                     // Проверяем, что обновленные данные соответствуют фильтрам
-                    const filteredCount = this.filteredOpportunities.length;
                     this.opportunities = updatedOpportunities;
                     console.log('Updated opportunities. Total:', updatedOpportunities.length, 'Filtered:', this.filteredOpportunities.length);
                 }, this.filters.updatePeriod * 1000);
