@@ -107,14 +107,27 @@ export const useDashboardStore = defineStore('dashboard', {
 
         // Добавление новой сделки
         addTrade(trade) {
-            this.trades.unshift({
+            // Округляем значения до 8 знаков для криптовалют и до 2 знаков для USD
+            const roundToDecimals = (value, decimals) => Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+
+            // Определяем количество знаков после запятой в зависимости от цены
+            const decimals = trade.buyPrice < 1 ? 8 : 2;
+
+            const roundedTrade = {
                 id: Date.now(),
                 date: new Date().toISOString(),
-                ...trade
-            })
+                ...trade,
+                buyPrice: roundToDecimals(trade.buyPrice, decimals),
+                sellPrice: roundToDecimals(trade.sellPrice, decimals),
+                amount: roundToDecimals(trade.amount, decimals),
+                fee: roundToDecimals(trade.fee, 2), // Комиссия всегда в USD, округляем до 2 знаков
+                profit: roundToDecimals(trade.profit, 2) // Профит всегда в USD, округляем до 2 знаков
+            }
+
+            this.trades.unshift(roundedTrade)
             this.updateStatistics()
             this.updateChartData()
-            this.updateExchangeBalances(trade)
+            this.updateExchangeBalances(roundedTrade)
         },
 
         // Обновление балансов бирж после сделки
