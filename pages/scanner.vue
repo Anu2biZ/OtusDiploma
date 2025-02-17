@@ -1,5 +1,6 @@
 # pages/scanner.vue
 <template>
+  <notifications position="top center" :duration="3000" />
   <div class="min-h-screen bg-gray-900 text-gray-100">
     <div class="container mx-auto px-4 py-8">
       <h1 class="text-3xl font-bold mb-8 text-blue-400">Межбиржевой сканер</h1>
@@ -279,6 +280,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useScannerStore } from '~/stores/scanner'
 import { useDashboardStore } from '~/stores/dashboard'
+import {Notifications, useNotification} from '@kyvg/vue3-notification'
 import Multiselect from '@vueform/multiselect'
 
 // Стили для Multiselect
@@ -286,6 +288,7 @@ import '@vueform/multiselect/themes/default.css'
 
 const scannerStore = useScannerStore()
 const dashboardStore = useDashboardStore()
+const { notify } = useNotification()
 
 // Инициализируем фильтры с пустыми значениями
 const filters = ref({
@@ -327,9 +330,85 @@ const setPage = (page) => {
 }
 
 const executeTrade = async (opportunity) => {
-  // ... (остальной код executeTrade остается прежним)
-}
+  try {
+    // Проверяем что количество введено
+    if (!opportunity.amount || opportunity.amount <= 0) {
+      notify({
+        title: 'Ошибка!',
+        text: 'Введите корректное количество',
+        type: 'error',
+        duration: 3000
+      });
+      return;
+    }
 
+    // Находим биржу покупки и проверяем баланс USDT
+    const buyExchange = dashboardStore.exchanges.find(e => e.name === opportunity.buyExchange)
+    if (!buyExchange) {
+      notify({
+        title: 'Ошибка!',
+        text: 'Биржа покупки не найдена',
+        type: 'error',
+        duration: 3000
+      });
+      return;
+    }
+
+    const buyUSDTBalance = buyExchange.coins.find(c => c.symbol === 'USDT')
+    const requiredUSDT = opportunity.amount * opportunity.buyPrice
+
+    if (!buyUSDTBalance || buyUSDTBalance.amount < requiredUSDT) {
+      notify({
+        title: 'Ошибка!',
+        text: `Недостаточно USDT на бирже ${opportunity.buyExchange}. Требуется: ${requiredUSDT.toFixed(2)} USDT`,
+        type: 'error',
+        duration: 3000
+      });
+      return;
+    }
+
+    // Создаем объект сделки
+    const trade = {
+      coin: opportunity.coin,
+      buyExchange: opportunity.buyExchange,
+      sellExchange: opportunity.sellExchange,
+      buyPrice: opportunity.buyPrice,
+      sellPrice: opportunity.sellPrice,
+      amount: opportunity.amount,
+      spread: opportunity.spread,
+      fee: opportunity.fee,
+      profit: (opportunity.sellPrice - opportunity.buyPrice) * opportunity.amount - opportunity.fee,
+      status: 'Завершено'
+    }
+
+    console.log('Executing trade:', trade); // Отладочный лог
+
+    // Добавляем сделку в дашборд
+    dashboardStore.addTrade(trade)
+
+    // Удаляем возможность из сканера
+    const newOpportunities = scannerStore.opportunities.filter(
+        opp => opp.id !== opportunity.id
+    );
+    scannerStore.opportunities = newOpportunities;
+
+    notify({
+      title: 'Успех!',
+      text: `Сделка выполнена успешно. Профит: ${trade.profit.toFixed(2)} USDT`,
+      type: 'success',
+      duration: 3000
+    });
+
+  } catch (error) {
+    console.error('Trade execution error:', error);
+    notify({
+      title: 'Ошибка!',
+      text: 'Произошла ошибка при выполнении сделки',
+      type: 'error',
+      duration: 3000
+    });
+  }
+}
 // Жизненный цикл
 onMounted(async () => {
   console.log('Component mounted')

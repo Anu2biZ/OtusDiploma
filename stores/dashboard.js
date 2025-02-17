@@ -125,33 +125,51 @@ export const useDashboardStore = defineStore('dashboard', {
 
             if (!buyExchange || !sellExchange) return
 
-            // Обновляем USDT на бирже покупки
+            // Сохраняем изначальные балансы для расчета изменений
+            const initialBuyExchangeBalance = this.getExchangeBalance(trade.buyExchange)
+            const initialSellExchangeBalance = this.getExchangeBalance(trade.sellExchange)
+
+            // 1. На бирже покупки:
+            // - Уменьшаем USDT на сумму покупки
             const buyUSDT = buyExchange.coins.find(c => c.symbol === 'USDT')
             if (buyUSDT) {
                 buyUSDT.amount -= (trade.amount * trade.buyPrice)
                 buyUSDT.usdValue = buyUSDT.amount
             }
 
-            // Обновляем баланс купленной монеты
-            const boughtCoin = buyExchange.coins.find(c => c.symbol === trade.coin)
-            if (boughtCoin) {
-                boughtCoin.amount += trade.amount
-                boughtCoin.usdValue = boughtCoin.amount * trade.buyPrice
-            }
-
-            // Обновляем баланс проданной монеты на бирже продажи
-            const soldCoin = sellExchange.coins.find(c => c.symbol === trade.coin)
-            if (soldCoin) {
-                soldCoin.amount -= trade.amount
-                soldCoin.usdValue = soldCoin.amount * trade.sellPrice
-            }
-
-            // Добавляем USDT на биржу продажи
+            // 2. На бирже продажи:
+            // - Увеличиваем USDT на сумму продажи
             const sellUSDT = sellExchange.coins.find(c => c.symbol === 'USDT')
             if (sellUSDT) {
                 sellUSDT.amount += (trade.amount * trade.sellPrice)
                 sellUSDT.usdValue = sellUSDT.amount
             }
+
+            // Обновляем процент изменения для обеих бирж
+            const newBuyExchangeBalance = this.getExchangeBalance(trade.buyExchange)
+            const newSellExchangeBalance = this.getExchangeBalance(trade.sellExchange)
+
+            // Обновляем изменения для всех монет на бирже покупки
+            buyExchange.coins.forEach(coin => {
+                if (coin.symbol === 'USDT') {
+                    coin.change = ((coin.usdValue - 1000) / 1000 * 100).toFixed(2)
+                } else {
+                    coin.amount = 0
+                    coin.usdValue = 0
+                    coin.change = 0
+                }
+            })
+
+            // Обновляем изменения для всех монет на бирже продажи
+            sellExchange.coins.forEach(coin => {
+                if (coin.symbol === 'USDT') {
+                    coin.change = ((coin.usdValue - 1000) / 1000 * 100).toFixed(2)
+                } else {
+                    coin.amount = 0
+                    coin.usdValue = 0
+                    coin.change = 0
+                }
+            })
         },
 
         // Обновление данных графика

@@ -3,7 +3,7 @@ const COIN_BASE_PRICES = {
     'ETH': 3500,
     'BNB': 450,
     'XRP': 0.55,
-    'ADA': 0.45,
+    'SOL': 0.45,
     'USDT': 1
 }
 
@@ -22,7 +22,7 @@ export const useScannerStore = defineStore('scanner', {
             updatePeriod: 5
         },
         exchanges: ['Binance', 'ByBit', 'Kraken', 'MEXC'],
-        coins: ['USDT', 'BTC', 'ETH', 'BNB', 'XRP', 'ADA'],
+        coins: ['USDT', 'BTC', 'ETH', 'BNB', 'XRP', 'SOL'],
         websocket: null,
         loading: false,
         currentPage: 1,

@@ -1,5 +1,6 @@
 <!-- app.vue -->
 <template>
+  <notifications />
   <div class="min-h-screen bg-gray-900">
     <header v-if="showHeader" class="bg-gray-800 border-b border-gray-700">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
