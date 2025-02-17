@@ -1,0 +1,410 @@
+# pages/scanner.vue
+<template>
+  <div class="min-h-screen bg-gray-900 text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold mb-8 text-blue-400">Межбиржевой сканер</h1>
+
+      <!-- Filters Card -->
+      <div class="bg-gray-800 rounded-lg shadow-xl p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-6 text-blue-400">Фильтры</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Exchange & Coin Filters -->
+          <div class="space-y-6">
+            <!-- Sell Exchanges -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Где продавать
+              </label>
+              <Multiselect
+                  v-model="filters.sellExchanges"
+                  :options="exchanges"
+                  :classes="{
+
+                  }"
+                  :multiple="true"
+                  mode="tags"
+                  placeholder="Выберите биржи"
+                  class="multiselect-dark"
+                  track-by="value"
+                  label="name"
+                  :searchable="true"
+                  :createTag="false"
+                  :clear-on-select="false"
+                  :close-on-select="false"
+              />
+            </div>
+
+            <!-- Buy Exchanges -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Где покупать
+              </label>
+              <Multiselect
+                  v-model="filters.buyExchanges"
+                  :options="exchanges"
+                  :multiple="true"
+                  placeholder="Выберите биржи"
+                  class="multiselect-dark"
+                  track-by="name"
+                  label="name"
+                  mode="tags"
+                  :searchable="true"
+                  :createTag="false"
+                  :clear-on-select="false"
+                  :close-on-select="false"
+              />
+            </div>
+
+            <!-- Coins -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Монеты
+              </label>
+              <Multiselect
+                  v-model="filters.coins"
+                  :options="coins"
+                  :multiple="true"
+                  placeholder="Выберите монеты"
+                  class="multiselect-dark"
+                  track-by="value"
+                  label="name"
+                  mode="tags"
+                  :searchable="true"
+                  :createTag="false"
+                  :clear-on-select="false"
+                  :close-on-select="false"
+              />
+            </div>
+          </div>
+
+          <!-- Volume and Profit Filters -->
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Минимальный объем
+              </label>
+              <div class="relative">
+                <input
+                    type="number"
+                    v-model="filters.minVolume"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="0"
+                >
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Максимальный объем
+              </label>
+              <div class="relative">
+                <input
+                    type="number"
+                    v-model="filters.maxVolume"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="1000000"
+                >
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Минимальная прибыль
+              </label>
+              <div class="relative">
+                <input
+                    type="number"
+                    v-model="filters.minProfit"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="0"
+                >
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Filters -->
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Спред
+              </label>
+              <div class="relative">
+                <input
+                    type="number"
+                    v-model="filters.spread"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="0"
+                >
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Макс. комиссия
+              </label>
+              <div class="relative">
+                <input
+                    type="number"
+                    v-model="filters.maxFee"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="100"
+                >
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                Период обновления
+              </label>
+              <select
+                  v-model="filters.updatePeriod"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="5">5 секунд</option>
+                <option value="10">10 секунд</option>
+                <option value="30">30 секунд</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opportunities Table -->
+      <div class="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-700">
+            <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Монета</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Цена покупки
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Биржа покупки
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Цена продажи
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Биржа продажи
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Спред (%)</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Объем</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Комиссия ($)
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Профит ($)</th>
+              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Действия</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+            <tr v-for="opportunity in paginatedOpportunities"
+                :key="opportunity.id"
+                class="hover:bg-gray-700 transition-colors"
+            >
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                {{ opportunity.coin }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                ${{ opportunity.buyPrice.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                {{ opportunity.buyExchange }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                ${{ opportunity.sellPrice.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                {{ opportunity.sellExchange }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-green-400">
+                {{ opportunity.spread.toFixed(2) }}%
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-200">
+                ${{ opportunity.volume.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-red-400">
+                ${{ opportunity.fee.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap"
+                  :class="opportunity.profit > 0 ? 'text-green-400' : 'text-red-400'"
+              >
+                ${{ opportunity.profit.toFixed(2) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center space-x-2">
+                  <input
+                      type="number"
+                      v-model="opportunity.amount"
+                      placeholder="Кол-во"
+                      class="w-24 bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                  <button
+                      @click="executeTrade(opportunity)"
+                      class="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Старт
+                  </button>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 flex justify-center pb-6">
+          <nav class="flex items-center space-x-1">
+            <button
+                v-for="page in totalPages"
+                :key="page"
+                @click="setPage(page)"
+                :class="[
+                                'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                currentPage === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-300 hover:bg-gray-700'
+                            ]"
+            >
+              {{ page }}
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useScannerStore } from '~/stores/scanner'
+import { useDashboardStore } from '~/stores/dashboard'
+import Multiselect from '@vueform/multiselect'
+
+// Стили для Multiselect
+import '@vueform/multiselect/themes/default.css'
+
+const scannerStore = useScannerStore()
+const dashboardStore = useDashboardStore()
+
+// Инициализируем фильтры с пустыми значениями
+const filters = ref({
+  sellExchanges: [],
+  buyExchanges: [],
+  coins: [],
+  minVolume: 0,
+  maxVolume: '', // Пустое значение для maxVolume
+  minProfit: 0,
+  spread: 0,
+  maxFee: '', // Пустое значение для maxFee
+  updatePeriod: 5
+})
+
+// Состояние и геттеры
+const exchanges = computed(() => scannerStore.exchanges.map(exchange => ({
+  name: exchange,
+  value: exchange
+})))
+
+const coins = computed(() => scannerStore.coins.map(coin => ({
+  name: coin,
+  value: coin
+})))
+
+const paginatedOpportunities = computed(() => {
+  console.log('Total opportunities:', scannerStore.opportunities.length)
+  console.log('Filtered opportunities:', scannerStore.filteredOpportunities.length)
+  console.log('Current filters:', filters.value)
+  return scannerStore.paginatedOpportunities
+})
+
+const currentPage = computed(() => scannerStore.currentPage)
+const totalPages = computed(() => scannerStore.totalPages)
+
+// Методы
+const setPage = (page) => {
+  scannerStore.setPage(page)
+}
+
+const executeTrade = async (opportunity) => {
+  // ... (остальной код executeTrade остается прежним)
+}
+
+// Жизненный цикл
+onMounted(async () => {
+  console.log('Component mounted')
+  console.log('Initial filters:', filters.value)
+  // Устанавливаем начальные фильтры
+  scannerStore.updateFilters(filters.value)
+  // Загружаем возможности
+  await scannerStore.fetchOpportunities()
+  console.log('Opportunities fetched:', scannerStore.opportunities.length)
+  console.log('First opportunity:', scannerStore.opportunities[0])
+  scannerStore.initializeWebSocket()
+})
+
+onUnmounted(() => {
+  console.log('Component unmounted')
+  scannerStore.clearWebSocket()
+})
+
+// Отслеживание изменений
+watch(filters, (newFilters) => {
+  console.log('Filters changed:', newFilters)
+  scannerStore.updateFilters(newFilters)
+}, { deep: true })
+</script>
+
+<style>
+/* Dark theme for Multiselect */
+.multiselect-dark {
+  --ms-bg: #374151 !important;
+  --ms-border-color: #4B5563 !important;
+  --ms-dropdown-bg: #1F2937 !important;
+  --ms-option-bg-pointed: #2D3748 !important;
+  --ms-option-color-pointed: #fff !important;
+  --ms-tag-bg: #2563EB !important;
+  --ms-tag-color: #fff !important;
+  --ms-ring-color: #3B82F6 !important;
+  --ms-option-bg-selected: #2563EB !important;
+  --ms-option-color-selected: #fff !important;
+  --ms-tag-bg-disabled: #4B5563 !important;
+  --ms-placeholder-color: #9CA3AF !important;
+  --ms-color: #fff !important;
+}
+
+.multiselect-dark .multiselect-dropdown {
+  border-color: #4B5563 !important;
+}
+
+.multiselect-dark .multiselect-option {
+  color: #fff !important;
+}
+
+.multiselect-dark .multiselect-no-options {
+  color: #9CA3AF !important;
+}
+
+.multiselect-dark .multiselect-search {
+  background-color: #374151 !important;
+  color: #fff !important;
+}
+
+.multiselect-dark .multiselect-clear {
+  color: #9CA3AF !important;
+}
+
+.multiselect-dark .multiselect-tag {
+  background-color: #2563EB !important;
+  color: white !important;
+}
+
+.multiselect-dark .multiselect-tags-search {
+  background-color: transparent !important;
+  color: white !important;
+}
+
+.multiselect-wrapper {
+  height: 44px;
+}
+</style>
