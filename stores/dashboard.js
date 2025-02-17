@@ -1,78 +1,246 @@
 // stores/dashboard.js
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
+
+const createHistoricalData = () => {
+    // Генерируем даты для последних 3 дней
+    const dates = Array.from({length: 3}).map((_, i) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (2 - i))
+        return date
+    })
+
+    // Предопределенные сделки
+    const trades = [
+        {
+            id: Date.now() - 1000000,
+            date: dates[0].toISOString(),
+            coin: 'BTC',
+            buyExchange: 'Binance',
+            sellExchange: 'ByBit',
+            buyPrice: 64850.00,
+            sellPrice: 65100.00,
+            amount: 0.015,
+            spread: 0.38,
+            fee: 12.50,
+            profit: 1.25,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 900000,
+            date: dates[0].toISOString(),
+            coin: 'ETH',
+            buyExchange: 'Kraken',
+            sellExchange: 'MEXC',
+            buyPrice: 3480.00,
+            sellPrice: 3495.00,
+            amount: 0.12,
+            spread: 0.43,
+            fee: 5.20,
+            profit: 0.80,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 800000,
+            date: dates[1].toISOString(),
+            coin: 'SOL',
+            buyExchange: 'ByBit',
+            sellExchange: 'Binance',
+            buyPrice: 118.50,
+            sellPrice: 119.20,
+            amount: 2.5,
+            spread: 0.59,
+            fee: 3.80,
+            profit: 0.95,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 700000,
+            date: dates[1].toISOString(),
+            coin: 'BNB',
+            buyExchange: 'MEXC',
+            sellExchange: 'Kraken',
+            buyPrice: 448.20,
+            sellPrice: 450.40,
+            amount: 0.8,
+            spread: 0.49,
+            fee: 4.60,
+            profit: 1.18,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 600000,
+            date: dates[1].toISOString(),
+            coin: 'XRP',
+            buyExchange: 'Binance',
+            sellExchange: 'ByBit',
+            buyPrice: 0.54777,
+            sellPrice: 0.55140,
+            amount: 1200,
+            spread: 0.66,
+            fee: 3.90,
+            profit: 0.45,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 500000,
+            date: dates[2].toISOString(),
+            coin: 'BTC',
+            buyExchange: 'MEXC',
+            sellExchange: 'Kraken',
+            buyPrice: 65200.00,
+            sellPrice: 65450.00,
+            amount: 0.012,
+            spread: 0.38,
+            fee: 10.20,
+            profit: 1.80,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 400000,
+            date: dates[2].toISOString(),
+            coin: 'ETH',
+            buyExchange: 'Kraken',
+            sellExchange: 'Binance',
+            buyPrice: 3490.00,
+            sellPrice: 3505.00,
+            amount: 0.15,
+            spread: 0.43,
+            fee: 4.80,
+            profit: 1.45,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 300000,
+            date: dates[2].toISOString(),
+            coin: 'SOL',
+            buyExchange: 'ByBit',
+            sellExchange: 'MEXC',
+            buyPrice: 119.80,
+            sellPrice: 120.50,
+            amount: 3.2,
+            spread: 0.58,
+            fee: 5.10,
+            profit: 1.12,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 200000,
+            date: dates[2].toISOString(),
+            coin: 'BNB',
+            buyExchange: 'Binance',
+            sellExchange: 'Kraken',
+            buyPrice: 449.80,
+            sellPrice: 451.90,
+            amount: 0.9,
+            spread: 0.47,
+            fee: 4.90,
+            profit: 1.02,
+            status: 'Завершено'
+        },
+        {
+            id: Date.now() - 100000,
+            date: dates[2].toISOString(),
+            coin: 'XRP',
+            buyExchange: 'MEXC',
+            sellExchange: 'ByBit',
+            buyPrice: 0.54890,
+            sellPrice: 0.55240,
+            amount: 1500,
+            spread: 0.64,
+            fee: 4.20,
+            profit: 1.15,
+            status: 'Завершено'
+        }
+    ]
+
+    // Рассчитываем статистику
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const trades24h = trades.filter(trade => new Date(trade.date) > oneDayAgo)
+
+    const statistics = {
+        totalProfit: trades.reduce((sum, trade) => sum + trade.profit, 0),
+        profit24h: trades24h.reduce((sum, trade) => sum + trade.profit, 0),
+        volume24h: trades24h.reduce((sum, trade) => sum + (trade.amount * trade.buyPrice), 0)
+    }
+
+    // Группируем сделки по дням для графика
+    const chartData = {
+        labels: dates.map(date => date.toLocaleDateString()),
+        values: dates.map(date => {
+            const dayTrades = trades.filter(trade =>
+                new Date(trade.date).toLocaleDateString() === date.toLocaleDateString()
+            )
+            return dayTrades.reduce((sum, trade) => sum + trade.profit, 0)
+        })
+    }
+
+    return {
+        trades,
+        statistics,
+        chartData
+    }
+}
+
 
 export const useDashboardStore = defineStore('dashboard', {
-    state: () => ({
-        // Общая статистика
-        statistics: {
-            totalProfit: 0,
-            profit24h: 0,
-            volume24h: 0
-        },
+    state: () => {
+        // Получаем исторические данные
+        const historical = createHistoricalData()
 
-        // Время начала сессии
-        sessionStartTime: new Date().toISOString(),
-
-        // Список поддерживаемых монет
-        supportedCoins: ['USDT', 'BTC', 'ETH', 'BNB', 'XRP', 'SOL'],
-
-        // Балансы бирж
-        exchanges: [
-            {
-                name: 'Binance',
-                coins: [
-                    { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
-                    { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
-                ]
-            },
-            {
-                name: 'ByBit',
-                coins: [
-                    { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
-                    { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
-                ]
-            },
-            {
-                name: 'Kraken',
-                coins: [
-                    { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
-                    { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
-                ]
-            },
-            {
-                name: 'MEXC',
-                coins: [
-                    { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
-                    { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
-                    { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
-                ]
-            }
-        ],
-
-        // История сделок
-        trades: [],
-
-        // Данные для графика (profit по дням)
-        chartData: {
-            labels: [], // Даты
-            values: []  // Значения профита
+        return {
+            statistics: historical.statistics,
+            sessionStartTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            supportedCoins: ['USDT', 'BTC', 'ETH', 'BNB', 'XRP', 'SOL'],
+            exchanges: [
+                {
+                    name: 'Binance',
+                    coins: [
+                        { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
+                        { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
+                    ]
+                },
+                {
+                    name: 'ByBit',
+                    coins: [
+                        { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
+                        { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
+                    ]
+                },
+                {
+                    name: 'Kraken',
+                    coins: [
+                        { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
+                        { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
+                    ]
+                },
+                {
+                    name: 'MEXC',
+                    coins: [
+                        { symbol: 'USDT', amount: 1000, usdValue: 1000, change: 0 },
+                        { symbol: 'BTC', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'ETH', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'BNB', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'XRP', amount: 0, usdValue: 0, change: 0 },
+                        { symbol: 'SOL', amount: 0, usdValue: 0, change: 0 }
+                    ]
+                }
+            ],
+            trades: historical.trades,
+            chartData: historical.chartData
         }
-    }),
+    },
 
     getters: {
         // Получение баланса конкретной биржи
@@ -226,6 +394,7 @@ export const useDashboardStore = defineStore('dashboard', {
                 })
             })
         },
+
 
     }
 })
