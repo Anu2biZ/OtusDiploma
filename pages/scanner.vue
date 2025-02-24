@@ -301,11 +301,11 @@ const filters = ref({
   buyExchanges: [],
   coins: [],
   minVolume: 0,
-  maxVolume: '', // Пустое значение для maxVolume
+  maxVolume: '',
   minProfit: 0,
   spread: 0,
-  maxFee: '', // Пустое значение для maxFee
-  updatePeriod: 5
+  maxFee: '',
+  updatePeriod: 5 // TODO: Update period, чето не работает щас
 })
 
 // Состояние и геттеры
@@ -369,7 +369,7 @@ const executeTrade = async (opportunity) => {
       return;
     }
 
-    // Создаем объект сделки
+    // Сделка объект
     const trade = {
       coin: opportunity.coin,
       buyExchange: opportunity.buyExchange,

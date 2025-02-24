@@ -11,17 +11,14 @@ export const useAuthStore = defineStore('auth', {
                 this.isAuthenticated = !!token
 
                 if (token) {
-                    // Здесь можно добавить декодирование JWT если используется
                     this.user = JSON.parse(localStorage.getItem('user') || '{}')
                 }
             }
         },
 
         login(credentials) {
-            // Имитация запроса к API
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    // Фейковые данные для демонстрации
                     const userData = {
                         id: 1,
                         username: credentials.username,

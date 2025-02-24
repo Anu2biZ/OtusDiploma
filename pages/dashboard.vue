@@ -80,7 +80,6 @@ onMounted(() => {
     if (chartInstance) {
       chartInstance.destroy()
     }
-   // clearInterval(priceUpdateInterval)
   })
 })
 </script>

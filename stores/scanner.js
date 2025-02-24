@@ -15,10 +15,10 @@ export const useScannerStore = defineStore('scanner', {
             buyExchanges: [],
             coins: [],
             minVolume: 0,
-            maxVolume: 1000000, // Явно указываем числовое значение вместо пустой строки
+            maxVolume: 1000000,
             minProfit: 0,
             spread: 0,
-            maxFee: 100, // Явно указываем числовое значение вместо пустой строки
+            maxFee: 100,
             updatePeriod: 5
         },
         exchanges: ['Binance', 'ByBit', 'Kraken', 'MEXC'],
@@ -33,11 +33,10 @@ export const useScannerStore = defineStore('scanner', {
         filteredOpportunities: (state) => {
             // console.log('Running filter with state:', state.filters);
             return state.opportunities.filter(opp => {
-                // Преобразуем строковые значения в числа с дефолтными значениями
                 const volume = parseFloat(opp.volume) || 0;
                 const minVolume = parseFloat(state.filters.minVolume) || 0;
-                const maxVolume = parseFloat(state.filters.maxVolume) || Infinity; // Если пустая строка или невалидное число, берем Infinity
-                const maxFee = parseFloat(state.filters.maxFee) || Infinity; // Если пустая строка или невалидное число, берем Infinity
+                const maxVolume = parseFloat(state.filters.maxVolume) || Infinity;
+                const maxFee = parseFloat(state.filters.maxFee) || Infinity;
                 const minProfit = parseFloat(state.filters.minProfit) || 0;
                 const minSpread = parseFloat(state.filters.spread) || 0;
 
@@ -51,23 +50,6 @@ export const useScannerStore = defineStore('scanner', {
                 const matchesProfit = opp.profitPercent >= minProfit;
                 const matchesSpread = opp.spread >= minSpread;
                 const matchesFee = opp.fee <= maxFee;
-
-                // Отладочная информация для первой возможности
-                // if (state.opportunities.indexOf(opp) === 0) {
-                //     console.log('First opportunity:', {
-                //         ...opp,
-                //         matches: {
-                //             matchesSellExchange,
-                //             matchesBuyExchange,
-                //             matchesCoins,
-                //             matchesVolume,
-                //             matchesProfit,
-                //             matchesSpread,
-                //             matchesFee
-                //         }
-                //     });
-                // }
-
                 return matchesSellExchange && matchesBuyExchange && matchesCoins &&
                     matchesVolume && matchesProfit && matchesSpread && matchesFee;
             });
@@ -89,7 +71,7 @@ export const useScannerStore = defineStore('scanner', {
             this.loading = true;
             const opportunities = [];
             // Генерируем больше возможностей, так как некоторые могут быть не прибыльными
-            for (let i = 0; i < 500; i++) {
+            for (let i = 0; i < 300; i++) {
                 const opp = this.generateOpportunity();
                 if (opp) opportunities.push(opp);
                 if (opportunities.length >= 300) break;
@@ -218,14 +200,14 @@ export const useScannerStore = defineStore('scanner', {
                                 spreadChanged: Math.abs(newSpread - opp.spread) > 0.01,
                                 profitChanged: Math.abs(newProfit - opp.profit) > 0.01
                             };
-                            
+
                             // Сбрасываем флаги через секунду
                             setTimeout(() => {
                                 updatedOpp.priceChanged = false;
                                 updatedOpp.spreadChanged = false;
                                 updatedOpp.profitChanged = false;
                             }, 1000);
-                            
+
                             return updatedOpp;
                         }
                         return opp;

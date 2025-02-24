@@ -306,9 +306,6 @@ export const useDashboardStore = defineStore('dashboard', {
 
             if (!buyExchange || !sellExchange) return
 
-            // Сохраняем изначальные балансы для расчета изменений
-            const initialBuyExchangeBalance = this.getExchangeBalance(trade.buyExchange)
-            const initialSellExchangeBalance = this.getExchangeBalance(trade.sellExchange)
 
             // 1. На бирже покупки:
             // - Уменьшаем USDT на сумму покупки
@@ -326,14 +323,10 @@ export const useDashboardStore = defineStore('dashboard', {
                 sellUSDT.usdValue = sellUSDT.amount
             }
 
-            // Обновляем процент изменения для обеих бирж
-            const newBuyExchangeBalance = this.getExchangeBalance(trade.buyExchange)
-            const newSellExchangeBalance = this.getExchangeBalance(trade.sellExchange)
-
             // Обновляем изменения для всех монет на бирже покупки
             buyExchange.coins.forEach(coin => {
                 if (coin.symbol === 'USDT') {
-                    coin.change = ((coin.usdValue - 1000) / 1000 * 100).toFixed(2)
+                    coin.change = ((coin.usdValue - coin.amount) / coin.amount * 100).toFixed(2)
                 } else {
                     coin.amount = 0
                     coin.usdValue = 0
@@ -344,7 +337,7 @@ export const useDashboardStore = defineStore('dashboard', {
             // Обновляем изменения для всех монет на бирже продажи
             sellExchange.coins.forEach(coin => {
                 if (coin.symbol === 'USDT') {
-                    coin.change = ((coin.usdValue - 1000) / 1000 * 100).toFixed(2)
+                    coin.change = ((coin.usdValue - coin.amount) / coin.amount * 100).toFixed(2)
                 } else {
                     coin.amount = 0
                     coin.usdValue = 0
