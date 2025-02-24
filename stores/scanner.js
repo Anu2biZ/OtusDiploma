@@ -84,12 +84,28 @@ export const useScannerStore = defineStore('scanner', {
         },
 
         generateOpportunity() {
-            const coin = this.coins[Math.floor(Math.random() * this.coins.length)];
-            const buyExchange = this.exchanges[Math.floor(Math.random() * this.exchanges.length)];
+            // Выбираем монету с учетом фильтров
+            const availableCoins = this.filters.coins.length > 0 ? this.filters.coins : this.coins;
+            const coin = availableCoins[Math.floor(Math.random() * availableCoins.length)];
+            
+            // Выбираем биржи с учетом фильтров
+            const availableBuyExchanges = this.filters.buyExchanges.length > 0 ? this.filters.buyExchanges : this.exchanges;
+            const availableSellExchanges = this.filters.sellExchanges.length > 0 ? this.filters.sellExchanges : this.exchanges;
+            
+            if (availableBuyExchanges.length === 0 || availableSellExchanges.length === 0) {
+                return null;
+            }
+
+            const buyExchange = availableBuyExchanges[Math.floor(Math.random() * availableBuyExchanges.length)];
             let sellExchange;
             do {
-                sellExchange = this.exchanges[Math.floor(Math.random() * this.exchanges.length)];
-            } while (sellExchange === buyExchange);
+                sellExchange = availableSellExchanges[Math.floor(Math.random() * availableSellExchanges.length)];
+            } while (sellExchange === buyExchange && availableSellExchanges.length > 1);
+
+            // Если не удалось найти разные биржи
+            if (sellExchange === buyExchange) {
+                return null;
+            }
 
             // Базовая цена монеты + случайное отклонение ±0.5%
             const basePrice = COIN_BASE_PRICES[coin] * (1 + (Math.random() - 0.5) * 0.01);

@@ -430,9 +430,11 @@ onUnmounted(() => {
 })
 
 // Отслеживание изменений
-watch(filters, (newFilters) => {
+watch(filters, async (newFilters) => {
   console.log('Filters changed:', newFilters)
   scannerStore.updateFilters(newFilters)
+  // Перегенерируем возможности при изменении фильтров
+  await scannerStore.fetchOpportunities()
 }, { deep: true })
 </script>
 

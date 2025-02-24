@@ -326,7 +326,7 @@ export const useDashboardStore = defineStore('dashboard', {
             // Обновляем изменения для всех монет на бирже покупки
             buyExchange.coins.forEach(coin => {
                 if (coin.symbol === 'USDT') {
-                    coin.change = ((coin.usdValue - coin.amount) / coin.amount * 100).toFixed(2)
+                    coin.change = ((coin.amount - 1000) / 1000 * 100).toFixed(2)
                 } else {
                     coin.amount = 0
                     coin.usdValue = 0
@@ -337,7 +337,7 @@ export const useDashboardStore = defineStore('dashboard', {
             // Обновляем изменения для всех монет на бирже продажи
             sellExchange.coins.forEach(coin => {
                 if (coin.symbol === 'USDT') {
-                    coin.change = ((coin.usdValue - coin.amount) / coin.amount * 100).toFixed(2)
+                    coin.change = ((coin.amount - 1000) / 1000 * 100).toFixed(2)
                 } else {
                     coin.amount = 0
                     coin.usdValue = 0
